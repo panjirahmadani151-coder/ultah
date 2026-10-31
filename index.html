@@ -327,6 +327,16 @@
     .polaroid:nth-child(3) { transform: rotate(-1deg); }
     .polaroid:hover { z-index: 1; box-shadow: 0 15px 28px rgba(63, 45, 80, 0.18); transform: translateY(-5px) rotate(0); }
 
+    .reveal {
+      opacity: 0;
+      translate: 0 20px;
+      transition: opacity 650ms ease, translate 650ms cubic-bezier(.2,.8,.2,1);
+    }
+
+    .reveal.is-visible { opacity: 1; translate: 0 0; }
+    .gallery .polaroid:nth-child(2) { transition-delay: 90ms; }
+    .gallery .polaroid:nth-child(3) { transition-delay: 180ms; }
+
     .photo-frame {
       position: relative;
       display: grid;
@@ -340,7 +350,59 @@
     .polaroid:nth-child(2) .photo-frame { background-image: radial-gradient(circle at 75% 22%, #fff8bc 0 8%, transparent 8.5%), radial-gradient(circle at 24% 76%, #fff 0 5%, transparent 5.5%), linear-gradient(145deg, #c0ead8, #fff0bd 52%, #f5bda9); }
     .polaroid:nth-child(3) .photo-frame { background-image: radial-gradient(circle at 24% 24%, #fff 0 5%, transparent 5.5%), radial-gradient(circle at 78% 69%, #fff8bc 0 8%, transparent 8.5%), linear-gradient(145deg, #ffd8bc, #d9cbfa 52%, #c3ecdc); }
 
-    .photo-frame img { position: absolute; width: 100%; height: 100%; object-fit: cover; }
+    .photo-frame img { position: absolute; width: 100%; height: 100%; object-fit: cover; transition: transform 450ms cubic-bezier(.2,.8,.2,1); }
+
+    .photo-view {
+      position: absolute;
+      inset: 0;
+      display: block;
+      width: 100%;
+      height: 100%;
+      padding: 0;
+      overflow: hidden;
+      border: 0;
+      background: transparent;
+      cursor: zoom-in;
+    }
+
+    .photo-view[hidden] { display: none; }
+    .photo-view:hover img { transform: scale(1.045); }
+
+    .photo-dialog {
+      position: relative;
+      width: min(92vw, 900px);
+      max-width: none;
+      max-height: 92vh;
+      padding: 14px;
+      overflow: visible;
+      border: 0;
+      border-radius: 8px;
+      background: var(--paper);
+      box-shadow: 0 24px 80px rgba(0, 0, 0, .35);
+      animation: dialog-in 220ms cubic-bezier(.2,.8,.2,1) both;
+    }
+
+    .photo-dialog::backdrop { background: rgba(36, 27, 49, .78); backdrop-filter: blur(5px); }
+    .photo-dialog > img { display: block; position: static; width: auto; height: auto; max-width: 100%; max-height: calc(92vh - 28px); margin: 0 auto; object-fit: contain; }
+
+    .photo-dialog-close {
+      position: absolute;
+      top: -13px;
+      right: -13px;
+      display: grid;
+      width: 38px;
+      height: 38px;
+      place-items: center;
+      border: 0;
+      border-radius: 50%;
+      background: var(--paper);
+      color: var(--ink);
+      cursor: pointer;
+      font-size: 1.35rem;
+      box-shadow: 0 3px 12px rgba(0, 0, 0, .2);
+    }
+    .polaroid:first-child .photo-frame { aspect-ratio: 4 / 5; }
+    .polaroid:first-child .photo-frame img { object-position: center top; }
 
     .photo-placeholder {
       display: grid;
@@ -402,6 +464,7 @@
     @keyframes wobble { 0%, 88%, 100% { transform: rotate(0); } 91% { transform: rotate(12deg) scale(1.12); } 95% { transform: rotate(-10deg); } }
     @keyframes float { 0%, 100% { translate: 0 0; } 50% { translate: 0 -12px; } }
     @keyframes confetti-fall { to { transform: translate(var(--drift), 105vh) rotate(760deg); opacity: 0.8; } }
+    @keyframes dialog-in { from { opacity: 0; transform: scale(.96) translateY(8px); } to { opacity: 1; transform: scale(1) translateY(0); } }
 
     @media (max-width: 680px) {
       .page { width: min(100% - 28px, 500px); padding-top: 27px; }
@@ -435,6 +498,7 @@
 
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+      .reveal { opacity: 1; translate: 0 0; }
     }
   </style>
 </head>
@@ -452,10 +516,10 @@
       <p class="hero-note">Hari ini panggungnya kamu. Let the good vibes begin!</p>
     </header>
 
-    <section class="letter" aria-labelledby="letter-title">
+    <section class="letter reveal" aria-labelledby="letter-title">
       <p class="letter-label" id="letter-title">A note just for you</p>
       <div class="message" id="birthday-message" hidden>
-        <strong>Happy Birthday to my favorite person, Ummayah! 🌟</strong>
+        <strong>Happy Birthday to my favorite friend, Ummayah! 🌟</strong>
         Wishing you a day as fabulous as you are. Semoga tahun ini bawa banyak kejutan seru, energi positif, dan hal-hal baik yang mendekatkanmu ke impianmu. Have the best birthday ever! 🥳💫
       </div>
       <button class="reveal-button" id="reveal-button" type="button" aria-expanded="false" aria-controls="birthday-message">
@@ -463,7 +527,7 @@
       </button>
     </section>
 
-    <section class="music-section" aria-labelledby="music-title">
+    <section class="music-section reveal" aria-labelledby="music-title">
       <div class="music-copy">
         <p class="music-label">A song for your day</p>
         <h2 id="music-title">Monokrom</h2>
@@ -478,45 +542,77 @@
     </section>
 
     <section class="gallery-section" aria-labelledby="gallery-title">
-      <div class="section-heading">
-        <h2 id="gallery-title">Little moments, big memories</h2>
-        <p>Simpan momen favorit kalian di sini.</p>
+      <div class="section-heading reveal">
+        <h2 id="gallery-title">Momen seru bareng Ummayah</h2>
+        <p>Kenangan seru bareng teman terbaik.</p>
       </div>
       <div class="gallery">
-        <article class="polaroid">
+        <article class="polaroid reveal">
           <div class="photo-frame">
-            <div class="photo-placeholder"><span class="camera" aria-hidden="true">📸</span><span>your favorite moment</span></div>
-            <img alt="" hidden>
-            <label class="photo-pick" title="Pilih foto" aria-label="Pilih foto untuk momen pertama">＋<input class="photo-input" type="file" accept="image/*"></label>
+            <button class="photo-view" type="button" aria-label="Perbesar foto Ummayah"><img src="https://raw.githubusercontent.com/panjirahmadani151-coder/ultah/main/WhatsApp%20Image%202026-10-31%20at%2008.47.54.jpeg" alt="Foto Ummayah" loading="lazy"></button>
           </div>
-          <p class="caption">The good old days</p>
+          <p class="caption">Momen paling seru</p>
         </article>
-        <article class="polaroid">
+        <article class="polaroid reveal">
           <div class="photo-frame">
             <div class="photo-placeholder"><span class="camera" aria-hidden="true">🌷</span><span>a day to remember</span></div>
-            <img alt="" hidden>
+            <button class="photo-view" type="button" hidden aria-label="Perbesar foto kenangan"><img alt="" hidden></button>
             <label class="photo-pick" title="Pilih foto" aria-label="Pilih foto untuk momen kedua">＋<input class="photo-input" type="file" accept="image/*"></label>
           </div>
-          <p class="caption">My favorite human</p>
+          <p class="caption">Teman paling asyik</p>
         </article>
-        <article class="polaroid">
+        <article class="polaroid reveal">
           <div class="photo-frame">
             <div class="photo-placeholder"><span class="camera" aria-hidden="true">💌</span><span>another happy memory</span></div>
-            <img alt="" hidden>
+            <button class="photo-view" type="button" hidden aria-label="Perbesar foto kenangan"><img alt="" hidden></button>
             <label class="photo-pick" title="Pilih foto" aria-label="Pilih foto untuk momen ketiga">＋<input class="photo-input" type="file" accept="image/*"></label>
           </div>
-          <p class="caption">More memories soon</p>
+          <p class="caption">Bakal banyak cerita lagi</p>
         </article>
       </div>
     </section>
 
-    <p class="footer-note">Made with lots of love <span aria-hidden="true">♥</span> just for Ummayah</p>
+    <p class="footer-note">Dari temanmu, untuk hari istimewamu <span aria-hidden="true">✦</span></p>
   </main>
+
+  <dialog class="photo-dialog" id="photo-dialog" aria-label="Foto diperbesar">
+    <button class="photo-dialog-close" id="photo-dialog-close" type="button" aria-label="Tutup foto">×</button>
+    <img id="dialog-image" alt="">
+  </dialog>
 
   <script>
     const revealButton = document.querySelector("#reveal-button");
     const birthdayMessage = document.querySelector("#birthday-message");
     const musicPlay = document.querySelector("#music-play");
+    const photoDialog = document.querySelector("#photo-dialog");
+    const dialogImage = document.querySelector("#dialog-image");
+
+    if ("IntersectionObserver" in window) {
+      const revealObserver = new IntersectionObserver((entries, observer) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          entry.target.classList.add("is-visible");
+          observer.unobserve(entry.target);
+        });
+      }, { threshold: 0.12 });
+      document.querySelectorAll(".reveal").forEach((item) => revealObserver.observe(item));
+    } else {
+      document.querySelectorAll(".reveal").forEach((item) => item.classList.add("is-visible"));
+    }
+
+    document.querySelectorAll(".photo-view").forEach((button) => {
+      button.addEventListener("click", () => {
+        const image = button.querySelector("img");
+        dialogImage.src = image.src;
+        dialogImage.alt = image.alt;
+        photoDialog.showModal();
+      });
+    });
+
+    document.querySelector("#photo-dialog-close").addEventListener("click", () => photoDialog.close());
+    photoDialog.addEventListener("click", (event) => {
+      if (event.target === photoDialog) photoDialog.close();
+    });
 
     musicPlay.addEventListener("click", () => {
       const player = document.createElement("iframe");
@@ -555,14 +651,17 @@
         const file = input.files?.[0];
         if (!file || !file.type.startsWith("image/")) return;
         const frame = input.closest(".photo-frame");
-        const image = frame.querySelector("img");
+        const photoView = frame.querySelector(".photo-view");
+        const image = photoView.querySelector("img");
         const placeholder = frame.querySelector(".photo-placeholder");
         const previousUrl = image.dataset.objectUrl;
         if (previousUrl) URL.revokeObjectURL(previousUrl);
         const imageUrl = URL.createObjectURL(file);
         image.src = imageUrl;
+        image.alt = `Foto kenangan: ${file.name}`;
         image.dataset.objectUrl = imageUrl;
         image.hidden = false;
+        photoView.hidden = false;
         placeholder.hidden = true;
       });
     });
